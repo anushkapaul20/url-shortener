@@ -1,0 +1,29 @@
+version: '3.9'
+
+# Development override — uses nodemon for hot reload
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  postgres:
+    ports:
+      - '5432:5432'
+
+  redis:
+    ports:
+      - '6379:6379'
+
+  api:
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
+    command: sh -c "node db/migrate.js && npx nodemon src/server.js"
+
+  worker:
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
+    command: npx nodemon src/workers/analyticsWorker.js

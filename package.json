@@ -1,0 +1,18 @@
+{
+  "name": "url-shortener",
+  "version": "1.0.0",
+  "description": "Scalable Distributed URL Shortener Platform",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev:backend": "npm run dev --workspace=backend",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "test:backend": "npm run test --workspace=backend",
+    "build:frontend": "npm run build --workspace=frontend",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down"
+  }
+}
