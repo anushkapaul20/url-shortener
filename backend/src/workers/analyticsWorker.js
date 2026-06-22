@@ -3,7 +3,16 @@ const { Worker } = require('bullmq');
 const UAParser = require('ua-parser-js');
 const geoip = require('geoip-lite');
 const pool = require('../lib/db');
-const redis = require('../lib/redisClient');
+
+const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+const isTLS = redisUrl.startsWith('rediss://') || redisUrl.includes('upstash.io');
+
+const connection = {
+  url: redisUrl,
+  tls: isTLS ? { rejectUnauthorized: false } : undefined,
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false,
+};
 
 async function processAnalyticsJob(job) {
   const { urlId, ip, userAgent, referrer, timestamp } = job.data;
@@ -44,10 +53,8 @@ async function processAnalyticsJob(job) {
 }
 
 async function startWorker() {
-  await redis.connect();
-
   const worker = new Worker('analytics', processAnalyticsJob, {
-    connection: redis,
+    connection,
     concurrency: 5,
   });
 
