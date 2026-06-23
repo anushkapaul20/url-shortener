@@ -2,12 +2,27 @@ require('dotenv').config();
 const app = require('./app');
 const redis = require('./lib/redisClient');
 const pool = require('./lib/db');
+const { execSync } = require('child_process');
+const path = require('path');
 
 const PORT = process.env.PORT || 5000;
 
 async function start() {
+  // Run migrations on startup
   try {
-    // Test DB connection
+    console.log('Running database migrations...');
+    execSync(`node ${path.join(__dirname, '../db/migrate.js')}`, {
+      stdio: 'inherit',
+      env: process.env,
+    });
+    console.log('Migrations complete');
+  } catch (err) {
+    console.error('Migration failed:', err.message);
+    process.exit(1);
+  }
+
+  // Test DB connection
+  try {
     await pool.query('SELECT 1');
     console.log('PostgreSQL connected');
   } catch (err) {
@@ -15,7 +30,7 @@ async function start() {
     process.exit(1);
   }
 
-  // Connect Redis — non-fatal if it fails (app still works without cache)
+  // Connect Redis — non-fatal if it fails
   try {
     await redis.connect();
     console.log('Redis connected');
